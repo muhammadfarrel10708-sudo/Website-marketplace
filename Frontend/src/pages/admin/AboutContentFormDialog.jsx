@@ -137,7 +137,7 @@ export default function AboutContentFormDialog({ content, onClose, onSaved }) {
                 <Field id="about-sort-order" label="Urutan tampil" optional hint="Angka kecil tampil lebih dulu. Kosongkan untuk menaruh di akhir.">
                   <input id="about-sort-order" type="number" min="0" max="65535" inputMode="numeric" className={inputClass(false)} value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} disabled={saving} />
                 </Field>
-                <label className="flex items-center gap-2.5 pb-2.5 text-sm text-gray-800"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} disabled={saving} className="h-4 w-4 rounded border-gray-300 accent-[#2f42d6]" />Tampilkan di website</label>
+                <label className="flex items-center gap-2.5 pb-2.5 text-sm text-gray-800"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} disabled={saving} className="h-4 w-4 rounded border-gray-300 accent-[var(--color-brand)]" />Tampilkan di website</label>
               </div>
               <div className="flex justify-end gap-3 border-t border-gray-200 pt-5">
                 <button type="button" onClick={requestClose} disabled={saving} className="rounded-full border border-gray-300 px-6 py-2.5 text-sm font-semibold text-gray-800 hover:border-gray-400 disabled:opacity-60">Batal</button>

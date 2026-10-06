@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSite;
+
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class AboutPageItem extends Model
 {
+    use BelongsToSite;
+
     protected $fillable = [
         'section_key', 'title', 'subtitle', 'content_one', 'content_two',
         'meta_one', 'meta_two', 'image_path', 'sort_order', 'is_active',

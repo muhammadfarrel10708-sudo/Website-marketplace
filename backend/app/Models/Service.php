@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSite;
+
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Service extends Model
 {
+    use BelongsToSite;
+
     protected $fillable = ['title', 'text', 'image_path', 'sort_order', 'is_active', 'placement'];
 
     protected function casts(): array

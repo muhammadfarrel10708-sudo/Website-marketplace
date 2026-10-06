@@ -1,9 +1,11 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StarIcon } from '@heroicons/react/24/solid'
 import { categories, products } from '../../data/marketplace'
 import { loadMine } from '../../data/reviewsStore'
 import { useAuth } from '../../auth/useAuth'
+import { getAdminMarketplace } from '../../api/marketplace'
+import DummyImage from '../../components/DummyImage'
 
 const rupiah = (n) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)
@@ -20,9 +22,62 @@ function Stat({ label, value, note }) {
   )
 }
 
-export default function Dashboard() {
-  const { user } = useAuth()
+function NusatronDashboard({ user }) {
+  const [items, setItems] = useState([])
+  const [status, setStatus] = useState('loading')
 
+  useEffect(() => {
+    let alive = true
+    getAdminMarketplace()
+      .then((rows) => { if (alive) { setItems(rows); setStatus('ready') } })
+      .catch(() => { if (alive) setStatus('error') })
+    return () => { alive = false }
+  }, [])
+
+  const active = items.filter((p) => p.is_active).length
+  const latest = items.slice(0, 4)
+
+  return (
+    <div className="mx-auto max-w-6xl">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Halo, {user?.name || 'Admin'}</h1>
+          <p className="mt-1 text-sm text-gray-600">Ringkasan website Nusatron.</p>
+        </div>
+        <Link to="/admin/marketplace" className="rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">Kelola Marketplace</Link>
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <Stat label="Produk marketplace" value={status === 'ready' ? items.length : '–'} />
+        <Stat label="Tampil di website" value={status === 'ready' ? active : '–'} />
+        <Stat label="Disembunyikan" value={status === 'ready' ? items.length - active : '–'} />
+      </div>
+
+      <section className="mt-6 rounded-lg border border-gray-200 bg-white p-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-gray-900">Produk terbaru</h2>
+          <Link to="/admin/marketplace" className="text-sm font-medium text-brand hover:underline">Lihat semua</Link>
+        </div>
+        {status === 'error' && <p className="mt-4 text-sm text-red-700">Data marketplace belum bisa dimuat. Pastikan backend berjalan dan migrasi sudah dijalankan.</p>}
+        {status === 'ready' && latest.length === 0 && <p className="mt-4 text-sm text-gray-600">Belum ada produk. Tambahkan lewat menu Produk.</p>}
+        {latest.length > 0 && (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {latest.map((p, i) => (
+              <div key={p.id} className="overflow-hidden rounded-lg border border-gray-200">
+                <div className="aspect-[4/3] bg-gray-100">
+                  {p.image_url ? <img src={p.image_url} alt="" className="h-full w-full object-cover" /> : <DummyImage seed={i} ratio="4 / 3" label="Gambar dummy" className="h-full w-full" />}
+                </div>
+                <p className="line-clamp-2 p-3 text-sm font-semibold text-gray-900">{p.name}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}
+
+function DzikroundDashboard({ user }) {
   const data = useMemo(() => {
     // Semua ulasan: dummy + ulasan yang ditulis pengunjung di browser ini
     const reviews = products.flatMap((p) =>
@@ -133,4 +188,10 @@ export default function Dashboard() {
       </section>
     </div>
   )
+}
+
+export default function Dashboard() {
+  const { user } = useAuth()
+  const isNusatron = user?.site_key === 'nusatron' || user?.username === 'nusatron'
+  return isNusatron ? <NusatronDashboard user={user} /> : <DzikroundDashboard user={user} />
 }

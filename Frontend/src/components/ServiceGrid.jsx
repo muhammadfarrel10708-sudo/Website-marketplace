@@ -6,16 +6,17 @@ import { services as dummyServices } from '../data/content'
 
 // Dipakai di Home dan di halaman /layanan. Placement menentukan daftar layanan yang dipakai.
 // Mengambil daftar dari backend; memakai daftar contoh bawaan jika backend kosong/tidak menyala.
-export default function ServiceGrid({ placement = 'page' }) {
-  const [items, setItems] = useState(null) // null = masih memuat
+export default function ServiceGrid({ placement = 'page', initialItems = null }) {
+  const [items, setItems] = useState(Array.isArray(initialItems) ? initialItems : null) // null = masih memuat
 
   useEffect(() => {
+    if (Array.isArray(initialItems)) { setItems(initialItems); return undefined }
     const controller = new AbortController()
     getPublicServices(controller.signal, placement)
       .then((rows) => setItems(rows.length ? rows : null))
       .catch(() => setItems(null))
     return () => controller.abort()
-  }, [placement])
+  }, [placement, initialItems])
 
   const list = items ?? dummyServices.map((s, i) => ({ id: `dummy-${i}`, title: s.title, text: s.text, image_url: null }))
 

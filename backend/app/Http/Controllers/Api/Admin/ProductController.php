@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Support\SiteContext;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -24,7 +25,7 @@ class ProductController extends Controller
     {
         $data = $request->safe()->except(['image']);
         if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('products', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('products'), self::DISK);
         }
         $data['items'] = $data['items'] ?? [];
         $data['is_active'] = $request->boolean('is_active', true);
@@ -43,7 +44,7 @@ class ProductController extends Controller
         $oldImage = null;
         if ($request->hasFile('image')) {
             $oldImage = $product->image_path;
-            $data['image_path'] = $request->file('image')->store('products', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('products'), self::DISK);
         }
         $product->update($data);
         if ($oldImage) {

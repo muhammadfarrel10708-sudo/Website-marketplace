@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { sitePath } from '../data/site'
 import DummyImage from './DummyImage'
 
 export default function CtaBanner() {
@@ -12,7 +13,7 @@ export default function CtaBanner() {
           Yuk selesaikan pesanan Anda
         </h2>
         <Link
-          to="/pesan-sekarang"
+          to={sitePath("/pesan-sekarang")}
           className="mt-8 inline-block rounded-full bg-brand px-8 py-3 text-sm font-semibold text-white hover:bg-brand-dark transition-colors"
         >
           Pesan Sekarang

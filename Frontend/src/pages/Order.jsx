@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import PageTitle from '../components/PageTitle'
 import { needTypes } from '../data/content'
-import { site, waLink } from '../data/site'
+import { site } from '../data/site'
+import { useWhatsApp } from '../data/settingsStore'
 
 const field = 'mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
 
 export default function Order() {
+  const { link: waLink } = useWhatsApp()
   const [f, setF] = useState({ nama: '', wa: '', jenis: '', pesan: '' })
   const [sent, setSent] = useState(null)
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
@@ -43,7 +45,7 @@ export default function Order() {
           Kirim via WhatsApp
         </button>
         {sent === 'nonumber' && (
-          <p className="mt-4 text-xs text-brand-dark" role="status">Nomor WhatsApp belum diisi di src/data/site.js.</p>
+          <p className="mt-4 text-xs text-brand-dark" role="status">Nomor WhatsApp belum diisi. Admin dapat mengisinya di menu Pengaturan.</p>
         )}
       </form>
     </>

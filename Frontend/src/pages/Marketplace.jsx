@@ -1,9 +1,12 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { sitePath } from '../data/site'
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, StarIcon } from '@heroicons/react/24/solid'
 import PageTitle from '../components/PageTitle'
 import DummyImage from '../components/DummyImage'
-import { categories, products } from '../data/marketplace'
+import { categories as dzikCategories, products as dzikProducts } from '../data/marketplace'
+import { getSiteKey } from '../data/site'
+import { getPublicMarketplace } from '../api/marketplace'
 
 const PAGE_SIZE = 10
 
@@ -23,28 +26,31 @@ function pageList(current, total) {
   return out
 }
 
-function Card({ p }) {
+function Card({ p, categories }) {
   const cat = categories.find((c) => c.id === p.categoryId)?.name
   return (
     <Link
-      to={`/marketplace/${p.id}`}
+      to={sitePath(`/marketplace/${p.id}`)}
       className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition-colors hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
-      <DummyImage seed={p.seed} ratio="1 / 1" label="Gambar dummy" />
+      {p.image_url
+        ? <div className="aspect-square bg-gray-100"><img src={p.image_url} alt={p.name} loading="lazy" decoding="async" className="h-full w-full object-cover" /></div>
+        : <DummyImage seed={p.seed} ratio="1 / 1" label="Gambar dummy" />}
       <div className="flex flex-1 flex-col p-3">
         <p className="text-[11px] text-gray-500">{cat}</p>
         <h3 className="mt-1 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-5 text-gray-900 group-hover:text-brand">{p.name}</h3>
         <p className="mt-2 text-base font-bold text-brand">{rupiah(p.price)}</p>
         <p className="mt-1 flex items-center gap-1 text-[11px] text-gray-500">
           <StarIcon className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
-          {p.rating} <span aria-hidden="true">|</span> Terjual {p.sold}
+          {p.rating ?? '–'} <span aria-hidden="true">|</span> Terjual {p.sold}
         </p>
       </div>
     </Link>
   )
 }
 
-export default function Marketplace() {
+
+function MarketplaceView({ products, categories, loading = false, error = '', sub }) {
   const [params, setParams] = useSearchParams()
   const q = params.get('q') || ''
   const cat = params.get('kategori') || 'all'
@@ -70,7 +76,7 @@ export default function Marketplace() {
     if (sort === 'mahal') list.sort((a, b) => b.price - a.price)
     if (sort === 'terlaris') list.sort((a, b) => b.sold - a.sold)
     return list
-  }, [q, cat, sort])
+  }, [q, cat, sort, products])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const page = Math.min(Math.max(pageParam, 1), totalPages)
@@ -88,7 +94,7 @@ export default function Marketplace() {
     const m = { all: inSearch.length }
     categories.forEach((c) => (m[c.id] = inSearch.filter((p) => p.categoryId === c.id).length))
     return m
-  }, [q])
+  }, [q, products, categories])
 
   const chip = (active) =>
     `whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
@@ -100,7 +106,7 @@ export default function Marketplace() {
 
   return (
     <>
-      <PageTitle sub="Komponen dan perangkat LED Videotron, siap kirim ke seluruh Indonesia.">Marketplace</PageTitle>
+      <PageTitle sub={sub}>Marketplace</PageTitle>
 
       <section className="mx-auto max-w-7xl px-6 pb-16">
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -140,15 +146,23 @@ export default function Marketplace() {
         </div>
 
         <p className="mt-6 text-sm text-gray-600" aria-live="polite">
-          {filtered.length
+          {loading || error || !products.length ? '\u00a0' : filtered.length
             ? `Menampilkan ${start + 1}–${start + visible.length} dari ${filtered.length} produk`
             : 'Tidak ada produk yang cocok'}
         </p>
 
-        {visible.length ? (
+        {loading ? (
+          <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+            {Array.from({ length: 10 }, (_, i) => <div key={i} className="aspect-[3/4] animate-pulse rounded-lg bg-gray-100" />)}
+          </div>
+        ) : error ? (
+          <div className="mt-4 rounded-lg border border-dashed border-red-300 bg-red-50 py-16 text-center text-sm text-red-700">{error}</div>
+        ) : !products.length ? (
+          <div className="mt-4 rounded-lg border border-dashed border-gray-300 py-16 text-center text-sm text-gray-600">Belum ada produk marketplace.</div>
+        ) : visible.length ? (
           <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
             {visible.map((p) => (
-              <Card key={p.id} p={p} />
+              <Card key={p.id} p={p} categories={categories} />
             ))}
           </div>
         ) : (
@@ -205,4 +219,38 @@ export default function Marketplace() {
       </section>
     </>
   )
+}
+
+function DzikroundMarketplace() {
+  return <MarketplaceView products={dzikProducts} categories={dzikCategories} sub="Komponen dan perangkat LED Videotron, siap kirim ke seluruh Indonesia." />
+}
+
+// Produk Nusatron datang dari API (dikelola admin) dan dipetakan ke bentuk yang sama dengan Dzikround.
+function NusatronMarketplace() {
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const controller = new AbortController()
+    getPublicMarketplace(controller.signal)
+      .then((data) => setRows(Array.isArray(data) ? data : []))
+      .catch((err) => { if (err?.name !== 'AbortError') setError(err?.message || 'Gagal memuat produk.') })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
+  }, [])
+
+  const { items, cats } = useMemo(() => {
+    const names = [...new Set(rows.map((r) => (r.category || '').trim()).filter(Boolean))]
+    return {
+      cats: names.map((n) => ({ id: n, name: n })),
+      items: rows.map((r, i) => ({ ...r, categoryId: (r.category || '').trim(), seed: i, rating: r.rating != null ? r.rating.toFixed(1) : null })),
+    }
+  }, [rows])
+
+  return <MarketplaceView products={items} categories={cats} loading={loading} error={error} sub="Komponen dan perangkat LED Videotron dari Nusatron." />
+}
+
+export default function Marketplace() {
+  return getSiteKey() === 'nusatron' ? <NusatronMarketplace /> : <DzikroundMarketplace />
 }

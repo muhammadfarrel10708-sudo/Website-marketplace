@@ -46,7 +46,7 @@ class SectionSeeder extends Seeder
 
         Section::firstOrCreate(
             ['key' => 'area_layanan'],
-            ['title' => 'Area Layanan Nama Brand', 'subtitle' => null],
+            ['title' => 'Area Layanan Dzikround', 'subtitle' => null],
         );
 
         Section::firstOrCreate(
@@ -149,7 +149,7 @@ class SectionSeeder extends Seeder
             ['sort_order' => 1],
             [
                 'title' => 'Supplier Jual Running Text & Videotron Surabaya',
-                'paragraph_one' => 'Lagi cari penyedia layanan pembuatan videotron yang aman, terpercaya, dan berpengalaman? Nama Brand siap jadi solusinya.',
+                'paragraph_one' => 'Lagi cari penyedia layanan pembuatan videotron yang aman, terpercaya, dan berpengalaman? Dzikround siap jadi solusinya.',
                 'paragraph_two' => 'Kami melayani pembuatan videotron/megatron untuk kebutuhan indoor maupun outdoor, serta jasa pembuatan LED running text. Sejak 2015, kami dipercaya berbagai instansi, perusahaan, sekolah, rumah ibadah, dan hotel.',
                 'image_path' => null,
                 'is_active' => true,

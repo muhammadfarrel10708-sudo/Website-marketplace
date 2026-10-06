@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { UserIcon, PhoneIcon, ChevronUpIcon } from '@heroicons/react/24/solid'
-import { waLink } from '../data/site'
+import { sitePath } from '../data/site'
+import { useWhatsApp } from '../data/settingsStore'
 
 const base = 'flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg transition-transform hover:scale-105'
 
 export default function FloatingButtons() {
   const [showTop, setShowTop] = useState(false)
-  const wa = waLink()
+  const wa = useWhatsApp().link()
 
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 400)
@@ -18,7 +19,7 @@ export default function FloatingButtons() {
 
   return (
     <div className="fixed bottom-6 right-4 z-40 flex flex-col items-center gap-3">
-      <Link to="/kontak" aria-label="Halaman kontak" className={`${base} bg-brand`}>
+      <Link to={sitePath("/kontak")} aria-label="Halaman kontak" className={`${base} bg-brand`}>
         <UserIcon className="h-6 w-6" aria-hidden="true" />
       </Link>
       {wa ? (
@@ -26,7 +27,7 @@ export default function FloatingButtons() {
           <PhoneIcon className="h-6 w-6" aria-hidden="true" />
         </a>
       ) : (
-        <Link to="/kontak" aria-label="Chat WhatsApp" className={`${base} bg-green-500`}>
+        <Link to={sitePath("/kontak")} aria-label="Chat WhatsApp" className={`${base} bg-green-500`}>
           <PhoneIcon className="h-6 w-6" aria-hidden="true" />
         </Link>
       )}

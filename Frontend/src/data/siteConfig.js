@@ -1,5 +1,5 @@
 export const siteConfig = {
-  storeName: "[ISI: Nama Brand]",
+  storeName: "[ISI: Dzikround]",
   whatsappNumber: "", // format internasional tanpa +, misal "6281234567890"
   whatsappText: "Halo, saya tertarik dengan produk Anda. Bisa minta info lebih lanjut?",
   email: "", // opsional

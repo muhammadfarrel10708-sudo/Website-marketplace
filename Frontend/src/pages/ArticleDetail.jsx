@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { sitePath } from '../data/site'
 import DummyImage from '../components/DummyImage'
 import CtaBanner from '../components/CtaBanner'
 import NotFound from './NotFound'
@@ -24,7 +25,7 @@ export default function ArticleDetail({ placement = 'menu' }) {
   return (
     <>
       <article className="mx-auto max-w-3xl px-6 py-14">
-        <Link to={placement === 'home' ? '/' : '/artikel'} className="text-sm font-semibold text-brand hover:underline">{placement === 'home' ? '&larr; Kembali ke Home' : '&larr; Semua artikel'}</Link>
+        <Link to={sitePath(placement === 'home' ? '/' : '/artikel')} className="text-sm font-semibold text-brand hover:underline">{placement === 'home' ? '&larr; Kembali ke Home' : '&larr; Semua artikel'}</Link>
         <p className="mt-6 text-xs text-gray-500">{article.date}</p>
         <h1 className="mt-1 text-3xl font-bold leading-tight text-gray-900">{article.title}</h1>
         {article.image_url ? <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-xl"><img src={article.image_url} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ transform: `translate(${Number(article.image_position_x ?? 0)}%, ${Number(article.image_position_y ?? 0)}%) scale(${Number(article.image_zoom ?? 1)})`, transformOrigin: 'center center' }} /></div> : <DummyImage seed={fallbackArticles.findIndex((x) => x.slug === article.slug) + 1} ratio="16 / 9" label="Gambar dummy" className="mt-6 rounded-xl" />}

@@ -259,7 +259,7 @@ function ItemDialog({ section, item, onClose, onSaved }) {
             </>
           )}
 
-          <div className="grid gap-5 sm:grid-cols-2 sm:items-end"><div><label className="mb-1.5 block text-sm font-medium">Urutan tampil</label><input type="number" min="0" max="65535" className={input} value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} disabled={saving} /></div><label className="flex items-center gap-2.5 pb-2.5 text-sm"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} disabled={saving} className="h-4 w-4 accent-[#2f42d6]" />Tampilkan di website</label></div>
+          <div className="grid gap-5 sm:grid-cols-2 sm:items-end"><div><label className="mb-1.5 block text-sm font-medium">Urutan tampil</label><input type="number" min="0" max="65535" className={input} value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} disabled={saving} /></div><label className="flex items-center gap-2.5 pb-2.5 text-sm"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} disabled={saving} className="h-4 w-4 accent-[var(--color-brand)]" />Tampilkan di website</label></div>
           <div className="flex justify-end gap-3 border-t border-gray-200 pt-5"><button type="button" onClick={onClose} disabled={saving} className="rounded-full border border-gray-300 px-6 py-2.5 text-sm font-semibold">Batal</button><button type="submit" disabled={saving} className="rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'Menyimpan…' : 'Simpan'}</button></div>
         </form>
       </div>

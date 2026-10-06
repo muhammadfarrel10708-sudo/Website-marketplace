@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSite;
+
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class CompanyStat extends Model
 {
+    use BelongsToSite;
+
     protected $fillable = ['value', 'label', 'sort_order', 'is_active'];
 
     protected function casts(): array

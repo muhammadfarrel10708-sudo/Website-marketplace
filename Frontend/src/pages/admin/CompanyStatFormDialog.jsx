@@ -76,7 +76,7 @@ export default function CompanyStatFormDialog({ stat, onClose, onSaved }) {
               <p className="mt-1.5 text-xs text-gray-500">Kosongkan untuk menaruh di akhir.</p>
             </div>
             <label className="flex items-center gap-2.5 pb-2.5 text-sm text-gray-800">
-              <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} disabled={saving} className="h-4 w-4 rounded border-gray-300 accent-[#2f42d6]" />
+              <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} disabled={saving} className="h-4 w-4 rounded border-gray-300 accent-[var(--color-brand)]" />
               Tampilkan di website
             </label>
           </div>

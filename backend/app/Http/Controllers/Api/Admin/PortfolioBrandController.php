@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PortfolioBrandRequest;
 use App\Http\Resources\PortfolioBrandResource;
+use App\Support\SiteContext;
 use App\Models\PortfolioBrand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,7 +21,7 @@ class PortfolioBrandController extends Controller
     public function store(PortfolioBrandRequest $request): JsonResponse
     {
         $data = $request->safe()->except(['image']);
-        if ($request->hasFile('image')) $data['image_path'] = $request->file('image')->store('portfolio-brands', self::DISK);
+        if ($request->hasFile('image')) $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('portfolio-brands'), self::DISK);
         $data['zoom'] = $data['zoom'] ?? 1;
         $data['position_x'] = $data['position_x'] ?? 50;
         $data['position_y'] = $data['position_y'] ?? 50;
@@ -38,7 +39,7 @@ class PortfolioBrandController extends Controller
         $oldImage = null;
         if ($request->hasFile('image')) {
             $oldImage = $portfolioBrand->image_path;
-            $data['image_path'] = $request->file('image')->store('portfolio-brands', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('portfolio-brands'), self::DISK);
         }
         $portfolioBrand->update($data);
         if ($oldImage) Storage::disk(self::DISK)->delete($oldImage);

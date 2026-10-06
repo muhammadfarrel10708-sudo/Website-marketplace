@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { sitePath } from '../data/site'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import DummyImage from './DummyImage'
@@ -25,7 +26,7 @@ function CtaButton({ label, url }) {
   if (!label || !url) return null
   if (url.startsWith('/')) {
     return (
-      <Link to={url} className={ctaClass}>
+      <Link to={sitePath(url)} className={ctaClass}>
         {label}
       </Link>
     )
@@ -40,10 +41,11 @@ function CtaButton({ label, url }) {
   return null
 }
 
-function useHeroSlides() {
-  const [state, setState] = useState({ ready: false, items: fallbackSlides })
+function useHeroSlides(initialItems) {
+  const [state, setState] = useState(() => ({ ready: Array.isArray(initialItems), items: initialItems?.length ? initialItems : fallbackSlides }))
 
   useEffect(() => {
+    if (Array.isArray(initialItems)) return undefined
     const ctrl = new AbortController()
     getPublicHeroes(ctrl.signal)
       .then((items) => setState({ ready: true, items: items.length ? items : fallbackSlides }))
@@ -51,7 +53,7 @@ function useHeroSlides() {
         if (err.name !== 'AbortError') setState({ ready: true, items: fallbackSlides })
       })
     return () => ctrl.abort()
-  }, [])
+  }, [initialItems])
 
   return state
 }
@@ -94,7 +96,7 @@ function Carousel({ items }) {
         >
           <div className="relative h-64 md:absolute md:inset-y-0 md:left-0 md:h-full md:w-2/3">
             {slide.image_url ? (
-              <img src={slide.image_url} alt="" decoding="async" className="h-full w-full object-cover" />
+              <img src={slide.image_url} alt="" fetchPriority="high" decoding="async" className="h-full w-full object-cover" />
             ) : (
               <DummyImage seed={index * 2} ratio={null} label="Gambar dummy" className="h-full w-full" />
             )}
@@ -135,17 +137,10 @@ function Carousel({ items }) {
   )
 }
 
-export default function HeroSlider() {
-  const { ready, items } = useHeroSlides()
+export default function HeroSlider({ initialItems = null }) {
+  const { items } = useHeroSlides(initialItems)
 
-  // Selama data dimuat, tampilkan kerangka setinggi slider agar layout tidak melompat
-  if (!ready) {
-    return (
-      <section className="relative overflow-hidden bg-white md:h-[640px]" aria-busy="true" aria-label="Highlight">
-        <div className="h-64 animate-pulse bg-gray-100 md:h-full md:w-2/3" />
-      </section>
-    )
-  }
-
+  // Tampilkan fallback langsung supaya refresh tidak menunggu API.
+  // Data backend akan menggantikan fallback setelah request selesai.
   return <Carousel items={items} />
 }

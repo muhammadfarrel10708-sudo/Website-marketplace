@@ -67,7 +67,7 @@ function VariantOption({ variant, selected, onSelect, onPreview }) {
             name="product-layout"
             checked={selected}
             onChange={onSelect}
-            className="h-4 w-4 shrink-0 accent-[#2f42d6]"
+            className="h-4 w-4 shrink-0 accent-[var(--color-brand)]"
           />
           <span>{label}</span>
         </label>
@@ -189,7 +189,7 @@ export default function ProductFormDialog({ product, onClose, onSaved }) {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div><label className="mb-1.5 block text-sm font-medium">Urutan tampil</label><input type="number" min="0" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm" /></div>
-                <label className="flex items-center gap-2 pt-7 text-sm"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[#2f42d6]" /> Tampilkan di website</label>
+                <label className="flex items-center gap-2 pt-7 text-sm"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[var(--color-brand)]" /> Tampilkan di website</label>
               </div>
             </div>
 

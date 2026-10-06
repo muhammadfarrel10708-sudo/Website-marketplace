@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSite;
+
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Article extends Model
 {
+    use BelongsToSite;
+
     protected $fillable = [
         'title', 'slug', 'placement', 'published_at', 'excerpt', 'body', 'image_path', 'image_zoom', 'image_position_x', 'image_position_y', 'sort_order', 'is_active',
     ];

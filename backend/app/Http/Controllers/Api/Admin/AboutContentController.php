@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AboutContentRequest;
 use App\Http\Resources\AboutContentResource;
+use App\Support\SiteContext;
 use App\Models\AboutContent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -26,7 +27,7 @@ class AboutContentController extends Controller
         $data = $request->safe()->except(['image']);
 
         if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('about', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('about'), self::DISK);
         }
 
         $data['is_active'] = $request->boolean('is_active', true);
@@ -51,7 +52,7 @@ class AboutContentController extends Controller
         $oldImage = null;
         if ($request->hasFile('image')) {
             $oldImage = $aboutContent->image_path;
-            $data['image_path'] = $request->file('image')->store('about', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('about'), self::DISK);
         }
 
         $aboutContent->update($data);

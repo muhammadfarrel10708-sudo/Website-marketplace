@@ -17,7 +17,7 @@ class HeroResource extends JsonResource
             'cta_label' => $this->cta_label,
             'cta_url' => $this->cta_url,
             // asset() memakai alamat yang sedang dipakai pemanggil (localhost:8000 atau domain hosting)
-            'image_url' => asset('uploads/'.$this->image_path),
+            'image_url' => $this->image_path ? asset('uploads/'.$this->image_path) : null,
             'sort_order' => $this->sort_order,
             'is_active' => $this->is_active,
             'updated_at' => $this->updated_at?->toIso8601String(),

@@ -1,19 +1,21 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import { site } from '../data/site'
+import { Bars3Icon, ShoppingCartIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { site, sitePath } from '../data/site'
+import CartDrawer from './CartDrawer'
+import { openCart, useCart } from '../data/cartStore'
 
-export function Logo({ light = false }) {
+export function Logo({ light = false, brand = site.brand, homePath = sitePath('/') }) {
   return (
-    <Link to="/" className="flex items-center gap-2" aria-label={site.brand}>
+    <Link to={homePath} className="flex items-center gap-2" aria-label={brand}>
       <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
-        <g fill="#2f42d6">
+        <g fill="var(--color-brand)">
           <rect x="6" y="8" width="5" height="22" transform="rotate(-18 8 19)" />
           <rect x="15" y="3" width="5" height="27" />
           <rect x="24" y="8" width="5" height="22" transform="rotate(18 26 19)" />
         </g>
       </svg>
-      <span className={`text-lg font-extrabold leading-5 ${light ? 'text-white' : 'text-gray-900'}`}>{site.brand}</span>
+      <span className={`text-lg font-extrabold leading-5 ${light ? 'text-white' : 'text-gray-900'}`}>{brand}</span>
     </Link>
   )
 }
@@ -23,6 +25,26 @@ const linkClass = ({ isActive }) =>
     isActive ? 'border-brand text-brand' : 'border-transparent text-gray-900 hover:text-brand'
   }`
 
+function CartButton() {
+  const { items } = useCart()
+  const count = items.length
+  return (
+    <button
+      type="button"
+      onClick={openCart}
+      aria-label={count ? `Buka keranjang, ${count} produk` : 'Buka keranjang'}
+      className="relative rounded-md p-2 text-gray-800 hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+    >
+      <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
+      {count > 0 && (
+        <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-bold leading-none text-white">
+          {count > 99 ? '99+' : count}
+        </span>
+      )}
+    </button>
+  )
+}
+
 export default function Header() {
   const [open, setOpen] = useState(false)
   return (
@@ -31,21 +53,25 @@ export default function Header() {
         <Logo />
         <nav className="hidden items-center gap-6 xl:flex" aria-label="Utama">
           {site.nav.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.to === '/'} className={linkClass}>
+            <NavLink key={n.to} to={sitePath(n.to)} end={n.to === '/'} className={linkClass}>
               {n.name}
             </NavLink>
           ))}
         </nav>
-        <button
-          type="button"
-          className="rounded-md p-2 text-gray-800 xl:hidden"
-          aria-label="Buka menu"
-          aria-expanded={open}
-          onClick={() => setOpen(true)}
-        >
-          <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-        </button>
+        <div className="flex items-center gap-1">
+          <CartButton />
+          <button
+            type="button"
+            className="rounded-md p-2 text-gray-800 xl:hidden"
+            aria-label="Buka menu"
+            aria-expanded={open}
+            onClick={() => setOpen(true)}
+          >
+            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </div>
       </div>
+      <CartDrawer />
 
       {open && (
         <div className="fixed inset-0 z-50 xl:hidden" role="dialog" aria-modal="true">
@@ -60,7 +86,7 @@ export default function Header() {
               {site.nav.map((n) => (
                 <NavLink
                   key={n.to}
-                  to={n.to}
+                  to={sitePath(n.to)}
                   end={n.to === '/'}
                   onClick={() => setOpen(false)}
                   className={({ isActive }) =>
@@ -71,7 +97,7 @@ export default function Header() {
                 </NavLink>
               ))}
               <Link
-                to="/pesan-sekarang"
+                to={sitePath("/pesan-sekarang")}
                 onClick={() => setOpen(false)}
                 className="mt-6 rounded-full bg-brand py-3 text-center text-sm font-semibold text-white"
               >

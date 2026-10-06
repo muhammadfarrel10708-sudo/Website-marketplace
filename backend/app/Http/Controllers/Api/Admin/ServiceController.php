@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ServiceRequest;
 use App\Http\Resources\ServiceResource;
+use App\Support\SiteContext;
 use App\Models\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,7 +36,7 @@ class ServiceController extends Controller
         $data['placement'] = $data['placement'] ?? 'page';
 
         if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('services', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('services'), self::DISK);
         }
         $data['is_active'] = $request->boolean('is_active', true);
         $data['sort_order'] = $data['sort_order'] ?? ((int) Service::where('placement', $data['placement'])->max('sort_order') + 1);
@@ -60,7 +61,7 @@ class ServiceController extends Controller
 
         if ($request->hasFile('image')) {
             $oldImage = $service->image_path;
-            $data['image_path'] = $request->file('image')->store('services', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('services'), self::DISK);
         }
 
         $service->update($data);

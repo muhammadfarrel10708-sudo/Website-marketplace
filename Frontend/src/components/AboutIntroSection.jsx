@@ -14,10 +14,11 @@ const fallback = [
   },
 ]
 
-export default function AboutIntroSection() {
-  const [items, setItems] = useState(fallback)
+export default function AboutIntroSection({ initialItems = null }) {
+  const [items, setItems] = useState(initialItems?.length ? initialItems : fallback)
 
   useEffect(() => {
+    if (Array.isArray(initialItems)) { setItems(initialItems.length ? initialItems : fallback); return undefined }
     const controller = new AbortController()
     getPublicAboutContents(controller.signal)
       .then((data) => {
@@ -27,7 +28,7 @@ export default function AboutIntroSection() {
         if (err?.name !== 'AbortError') setItems(fallback)
       })
     return () => controller.abort()
-  }, [])
+  }, [initialItems])
 
   return (
     <section aria-label="Tentang Kami">

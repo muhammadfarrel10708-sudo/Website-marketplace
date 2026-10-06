@@ -204,7 +204,7 @@ export default function ArticleFormDialog({ article, placement = 'home', onClose
                   <div><label className="mb-1.5 block text-sm font-medium">Tanggal</label><input type="date" value={publishedAt} onChange={(e) => setPublishedAt(e.target.value)} className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm" /></div>
                 </div>
                 <div><label className="mb-1.5 block text-sm font-medium">Urutan tampil</label><input type="number" min="0" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm" /></div>
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[#2f42d6]" /> Tampilkan di website</label>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[var(--color-brand)]" /> Tampilkan di website</label>
               </div>
 
               <div className="space-y-4">

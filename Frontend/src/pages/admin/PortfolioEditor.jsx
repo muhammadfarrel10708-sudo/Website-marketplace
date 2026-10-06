@@ -86,7 +86,7 @@ function PortfolioItemDialog({ item, onClose, onSaved }) {
             <label className="block text-sm font-medium">Kota / lokasi<input className={`${input} mt-1`} value={city} maxLength={120} onChange={(e) => setCity(e.target.value)} />{errors.city && <span className="text-xs text-red-600">{errors.city}</span>}</label>
             <label className="block text-sm font-medium">Tipe LED<input className={`${input} mt-1`} value={type} maxLength={40} placeholder="Contoh: P2.5" onChange={(e) => setType(e.target.value)} />{errors.type && <span className="text-xs text-red-600">{errors.type}</span>}</label>
             <label className="block text-sm font-medium">Urutan tampil<input className={`${input} mt-1`} type="number" min="0" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} /><span className="mt-1 block text-xs text-gray-500">Kosongkan untuk menaruh di paling akhir.</span></label>
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[#2f42d6]" /> Tampilkan di website</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[var(--color-brand)]" /> Tampilkan di website</label>
           </div>
         </div>
         <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4"><button type="button" disabled={saving} onClick={onClose} className="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold">Batal</button><button disabled={saving} className="rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'Menyimpan…' : 'Simpan'}</button></div>
@@ -271,7 +271,7 @@ function BrandDialog({ brand, onClose, onSaved }) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm font-medium">Urutan tampil<input className={`${input} mt-1`} type="number" min="0" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} /></label>
-            <label className="flex items-center gap-2 self-end pb-2 text-sm"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[#2f42d6]" /> Tampilkan di website</label>
+            <label className="flex items-center gap-2 self-end pb-2 text-sm"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[var(--color-brand)]" /> Tampilkan di website</label>
           </div>
 
           <div className="flex justify-end gap-3 border-t border-gray-200 pt-5">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ArticleRequest;
 use App\Http\Resources\ArticleResource;
+use App\Support\SiteContext;
 use App\Models\Article;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -26,7 +27,7 @@ class ArticleController extends Controller
     {
         $data = $request->safe()->except(['image']);
         if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('articles', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('articles'), self::DISK);
         }
         $data['placement'] = $data['placement'] ?? 'home';
         $data['is_active'] = $request->boolean('is_active', true);
@@ -50,7 +51,7 @@ class ArticleController extends Controller
         $oldImage = null;
         if ($request->hasFile('image')) {
             $oldImage = $article->image_path;
-            $data['image_path'] = $request->file('image')->store('articles', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('articles'), self::DISK);
         }
         $article->update($data);
         if ($oldImage) Storage::disk(self::DISK)->delete($oldImage);

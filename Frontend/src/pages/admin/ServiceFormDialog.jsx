@@ -246,7 +246,7 @@ export default function ServiceFormDialog({ service, placement = 'page', onClose
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
                 disabled={saving}
-                className="h-4 w-4 rounded border-gray-300 accent-[#2f42d6]"
+                className="h-4 w-4 rounded border-gray-300 accent-[var(--color-brand)]"
               />
               Tampilkan di website
             </label>

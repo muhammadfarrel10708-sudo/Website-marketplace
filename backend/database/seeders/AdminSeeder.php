@@ -7,29 +7,37 @@ use Illuminate\Database\Seeder;
 
 class AdminSeeder extends Seeder
 {
-    /**
-     * Membuat (atau memperbarui) akun admin dari file .env.
-     * Menjalankan ulang seeder ini = mereset password admin ke nilai di .env.
-     */
     public function run(): void
     {
-        $password = config('admin.password');
-
-        if (blank($password)) {
-            $this->command?->error('ADMIN_PASSWORD di file .env masih kosong. Isi dulu, lalu jalankan lagi.');
-
-            return;
-        }
-
-        User::updateOrCreate(
-            ['username' => config('admin.username')],
+        $accounts = [
             [
+                'site_key' => 'dzikround',
                 'name' => config('admin.name'),
+                'username' => config('admin.username'),
                 'email' => config('admin.email'),
-                'password' => $password, // di-hash otomatis oleh cast 'hashed' di model User
+                'password' => config('admin.password') ?: 'admin12345',
             ],
-        );
+            [
+                'site_key' => 'nusatron',
+                'name' => config('admin.nusatron.name'),
+                'username' => config('admin.nusatron.username'),
+                'email' => config('admin.nusatron.email'),
+                'password' => config('admin.nusatron.password') ?: 'admin12345',
+            ],
+        ];
 
-        $this->command?->info('Akun admin siap: username "'.config('admin.username').'".');
+        foreach ($accounts as $account) {
+            User::updateOrCreate(
+                ['username' => $account['username']],
+                [
+                    'site_key' => $account['site_key'],
+                    'name' => $account['name'],
+                    'email' => $account['email'],
+                    'password' => $account['password'],
+                ],
+            );
+
+            $this->command?->info('Akun admin siap: username "'.$account['username'].'" ('.$account['site_key'].').');
+        }
     }
 }

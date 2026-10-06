@@ -10,6 +10,9 @@ use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Api\Admin\AdvantageController as AdminAdvantageController;
 use App\Http\Controllers\Api\Admin\CompanyStatController as AdminCompanyStatController;
+use App\Http\Controllers\Api\Admin\MarketplaceProductController as AdminMarketplaceProductController;
+use App\Http\Controllers\Api\Admin\SiteSettingController as AdminSiteSettingController;
+use App\Http\Controllers\Api\SiteSettingController;
 use App\Http\Controllers\Api\HeroController;
 use App\Http\Controllers\Api\AboutContentController;
 use App\Http\Controllers\Api\AboutPageController;
@@ -26,9 +29,16 @@ use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\AdvantageController;
 use App\Http\Controllers\Api\CompanyStatController;
 use App\Http\Controllers\Api\WorkStepController;
+use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\MarketplaceProductController;
 use Illuminate\Support\Facades\Route;
 
 // ---- Publik (dipakai landing page) ----
+Route::middleware('site.public')->group(function () {
+Route::get('/home', [HomeController::class, 'index']);
+Route::get('/marketplace-products', [MarketplaceProductController::class, 'index']);
+Route::get('/marketplace-products/{id}', [MarketplaceProductController::class, 'show'])->whereNumber('id');
+Route::post('/marketplace-products/{id}/reviews', [MarketplaceProductController::class, 'storeReview'])->whereNumber('id')->middleware('throttle:10,1');
 Route::get('/heroes', [HeroController::class, 'index'])->name('heroes.index');
 Route::get('/about-contents', [AboutContentController::class, 'index']);
 Route::get('/about-page', [AboutPageController::class, 'index']);
@@ -44,6 +54,8 @@ Route::get('/articles', [ArticleController::class, 'index']);
 Route::get('/articles/{slug}', [ArticleController::class, 'show']);
 Route::get('/advantages', [AdvantageController::class, 'index']);
 Route::get('/company-stats', [CompanyStatController::class, 'index']);
+Route::get('/settings/{key}', [SiteSettingController::class, 'show']);
+});
 
 // Maksimal 5 percobaan login per menit per IP
 Route::post('/login', [AuthController::class, 'login'])
@@ -51,7 +63,7 @@ Route::post('/login', [AuthController::class, 'login'])
     ->name('login');
 
 // ---- Admin (wajib membawa token login) ----
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'site.admin'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -65,9 +77,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('services', AdminServiceController::class)->except(['show'])->names('admin.services');
         Route::apiResource('service-areas', AdminServiceAreaController::class)->except(['show'])->names('admin.service-areas');
         Route::apiResource('products', AdminProductController::class)->except(['show'])->names('admin.products');
+        Route::apiResource('marketplace-products', AdminMarketplaceProductController::class)->except(['show'])->parameters(['marketplace-products' => 'marketplaceProduct'])->names('admin.marketplace-products');
         Route::apiResource('articles', AdminArticleController::class)->except(['show'])->names('admin.articles');
         Route::apiResource('advantages', AdminAdvantageController::class)->except(['show'])->names('admin.advantages');
         Route::apiResource('company-stats', AdminCompanyStatController::class)->except(['show'])->parameters(['company-stats' => 'companyStat'])->names('admin.company-stats');
+        Route::put('settings/{key}', [AdminSiteSettingController::class, 'update'])->name('admin.settings.update');
         Route::put('sections/{key}', [AdminSectionController::class, 'update'])->name('admin.sections.update');
     });
 });

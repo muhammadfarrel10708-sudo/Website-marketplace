@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\HeroRequest;
 use App\Http\Resources\HeroResource;
+use App\Support\SiteContext;
 use App\Models\Hero;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -31,7 +32,7 @@ class HeroController extends Controller
     {
         $data = $request->safe()->except(['image']);
 
-        $data['image_path'] = $request->file('image')->store('heroes', self::DISK);
+        $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('heroes'), self::DISK);
         $data['is_active'] = $request->boolean('is_active', true);
 
         // Urutan kosong -> taruh di paling akhir
@@ -59,7 +60,7 @@ class HeroController extends Controller
 
         if ($request->hasFile('image')) {
             $oldImage = $hero->image_path;
-            $data['image_path'] = $request->file('image')->store('heroes', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('heroes'), self::DISK);
         }
 
         $hero->update($data);

@@ -6,16 +6,17 @@ import { site } from '../data/site'
 const dummySection = { title: 'Layanan Kami', subtitle: site.brand }
 
 // Blok "Layanan Kami" di Home: judul + ServiceGrid khusus layanan Home.
-export default function ServicesSection() {
-  const [section, setSection] = useState(dummySection)
+export default function ServicesSection({ initialSection = null, initialServices = null }) {
+  const [section, setSection] = useState(initialSection || dummySection)
 
   useEffect(() => {
+    if (initialSection || Array.isArray(initialServices)) { if (initialSection) setSection(initialSection); return undefined }
     const controller = new AbortController()
     getSection('layanan_home', controller.signal)
       .then((s) => s && setSection(s))
       .catch(() => {})
     return () => controller.abort()
-  }, [])
+  }, [initialSection, initialServices])
 
   return (
     <section className="mx-auto max-w-5xl px-6 py-16">
@@ -25,7 +26,7 @@ export default function ServicesSection() {
           {section.subtitle && <p className="mt-2 text-sm text-gray-600">{section.subtitle}</p>}
         </div>
       )}
-      <ServiceGrid placement="home" />
+      <ServiceGrid placement="home" initialItems={initialServices} />
     </section>
   )
 }

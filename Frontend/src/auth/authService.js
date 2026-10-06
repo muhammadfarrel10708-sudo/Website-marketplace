@@ -22,7 +22,7 @@ export async function login(username, password) {
   const expiresAt = Date.parse(data.expires_at)
   return {
     token: data.token,
-    user: { username: data.user.username, name: data.user.name, role: data.user.role },
+    user: { username: data.user.username, name: data.user.name, role: data.user.role, site_key: data.user.site_key, brand: data.user.brand },
     expiresAt: Number.isFinite(expiresAt) ? expiresAt : Date.now() + FALLBACK_SESSION_MS,
   }
 }

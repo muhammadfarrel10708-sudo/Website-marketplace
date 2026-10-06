@@ -8,11 +8,16 @@ const dummySection = { title: 'Cara Kerja', subtitle: null }
 
 // Blok "Cara Kerja" (dulu tanpa judul). Mengambil judul & langkah dari backend;
 // memakai judul dan 3 langkah contoh bawaan jika backend belum diisi/tidak menyala.
-export default function WorkSteps() {
-  const [section, setSection] = useState(dummySection)
-  const [steps, setSteps] = useState(null) // null = masih memuat
+export default function WorkSteps({ initialSection = null, initialSteps = null }) {
+  const [section, setSection] = useState(initialSection || dummySection)
+  const [steps, setSteps] = useState(initialSteps?.length ? initialSteps : null) // null = masih memuat
 
   useEffect(() => {
+    if (Array.isArray(initialSteps) || initialSection) {
+      if (Array.isArray(initialSteps)) setSteps(initialSteps.length ? initialSteps : null)
+      if (initialSection) setSection(initialSection)
+      return undefined
+    }
     const controller = new AbortController()
     getSection('cara_kerja', controller.signal)
       .then((s) => s && setSection(s))
@@ -21,7 +26,7 @@ export default function WorkSteps() {
       .then((rows) => setSteps(rows.length ? rows : null))
       .catch(() => setSteps(null))
     return () => controller.abort()
-  }, [])
+  }, [initialSection, initialSteps])
 
   const list = steps ?? dummySteps.map((s) => ({ title: s.title, text: s.text }))
   const labels = ['Pertama', 'Kedua', 'Ketiga', 'Keempat', 'Kelima', 'Keenam']

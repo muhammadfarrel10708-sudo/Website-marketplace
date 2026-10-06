@@ -1,9 +1,14 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ChevronDownIcon, ChevronLeftIcon, ChevronUpIcon, StarIcon } from '@heroicons/react/24/solid'
+import { ShoppingCartIcon } from '@heroicons/react/24/outline'
+import QtyStepper from '../components/QtyStepper'
+import { addToCart, openCart } from '../data/cartStore'
 import DummyImage from '../components/DummyImage'
-import { categories, getProduct } from '../data/marketplace'
-import { waLink } from '../data/site'
+import { categories as dzikCategories, getProduct } from '../data/marketplace'
+import { getSiteKey, sitePath } from '../data/site'
+import { useWhatsApp } from '../data/settingsStore'
+import { getPublicMarketplaceProduct, postMarketplaceReview } from '../api/marketplace'
 import { loadMine, saveMine } from '../data/reviewsStore'
 
 const COLLAPSED_HEIGHT = 168 // px, tinggi deskripsi saat diringkas
@@ -115,19 +120,19 @@ function RatingPicker({ value, onChange }) {
   )
 }
 
-function Reviews({ product }) {
-  const [mine, setMine] = useState(() => loadMine(product.id))
+function Reviews({ reviews, onSubmit }) {
   const [name, setName] = useState('')
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
   const [errors, setErrors] = useState({})
   const [sent, setSent] = useState(false)
 
-  const all = [...mine, ...product.reviews].sort((a, b) => new Date(b.date) - new Date(a.date))
-  const avg = all.reduce((s, r) => s + r.rating, 0) / all.length
+  const [busy, setBusy] = useState(false)
+  const all = [...reviews].sort((a, b) => new Date(b.date) - new Date(a.date))
+  const avg = all.length ? all.reduce((s, r) => s + r.rating, 0) / all.length : 0
   const dist = [5, 4, 3, 2, 1].map((n) => ({ n, count: all.filter((r) => r.rating === n).length }))
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault()
     const next = {}
     if (!rating) next.rating = 'Pilih jumlah bintang dulu.'
@@ -135,16 +140,15 @@ function Reviews({ product }) {
     setErrors(next)
     if (Object.keys(next).length) return
 
-    const review = {
-      id: `me-${Date.now()}`,
-      name: name.trim() || 'Pembeli',
-      rating,
-      comment: comment.trim(),
-      date: new Date().toISOString(),
+    setBusy(true)
+    try {
+      await onSubmit({ name: name.trim() || 'Pembeli', rating, comment: comment.trim() })
+    } catch (err) {
+      setErrors({ comment: err?.message || 'Ulasan gagal dikirim. Coba lagi.' })
+      setBusy(false)
+      return
     }
-    const list = [review, ...mine]
-    setMine(list)
-    saveMine(product.id, list)
+    setBusy(false)
     setName('')
     setRating(0)
     setComment('')
@@ -169,7 +173,7 @@ function Reviews({ product }) {
             <li key={n} className="flex items-center gap-3 text-xs text-gray-600">
               <span className="w-10">{n} bintang</span>
               <span className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
-                <span className="block h-full rounded-full bg-amber-400" style={{ width: `${(count / all.length) * 100}%` }} />
+                <span className="block h-full rounded-full bg-amber-400" style={{ width: `${all.length ? (count / all.length) * 100 : 0}%` }} />
               </span>
               <span className="w-5 text-right">{count}</span>
             </li>
@@ -203,13 +207,14 @@ function Reviews({ product }) {
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-4">
-          <button type="submit" className="rounded-full bg-brand px-8 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-            Kirim ulasan
+          <button type="submit" disabled={busy} className="rounded-full bg-brand px-8 py-2.5 disabled:opacity-60 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+            {busy ? 'Mengirim…' : 'Kirim ulasan'}
           </button>
           {sent && <p className="text-sm font-medium text-green-700" role="status">Ulasan terkirim, terima kasih!</p>}
         </div>
       </form>
 
+      {all.length === 0 && <p className="mt-8 text-sm text-gray-600">Belum ada ulasan. Jadilah yang pertama menulis ulasan.</p>}
       <ul className="mt-8 divide-y divide-gray-200">
         {all.map((r) => (
           <li key={r.id} className="flex gap-4 py-5">
@@ -231,15 +236,31 @@ function Reviews({ product }) {
   )
 }
 
-function Detail({ product }) {
+function Detail({ product, categories, reviews, onSubmitReview }) {
   const navigate = useNavigate()
   const cat = categories.find((c) => c.id === product.categoryId)?.name
-  const wa = waLink(`Halo, saya tertarik dengan produk: ${product.name}. Apakah masih tersedia?`)
+  const { productLink } = useWhatsApp()
+  const [qty, setQty] = useState(1)
+  const [added, setAdded] = useState(false)
+  const wa = productLink(product.name, qty)
   const cta =
-    'inline-block rounded-full bg-brand px-8 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+    'inline-flex items-center justify-center rounded-full bg-brand px-8 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+  const ctaOutline =
+    'inline-flex items-center justify-center gap-2 rounded-full border-2 border-brand bg-white px-8 py-[10px] text-center text-sm font-semibold text-brand transition-colors hover:bg-brand/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+
+  useEffect(() => {
+    if (!added) return
+    const t = setTimeout(() => setAdded(false), 6000)
+    return () => clearTimeout(t)
+  }, [added])
+
+  const onAdd = () => {
+    addToCart({ id: product.id, name: product.name, price: product.price, image_url: product.image_url || null, seed: product.seed ?? 0 }, qty)
+    setAdded(true)
+  }
 
   // Kembali ke daftar dengan pencarian, kategori, dan halaman yang sama
-  const back = () => (window.history.state?.idx > 0 ? navigate(-1) : navigate('/marketplace'))
+  const back = () => (window.history.state?.idx > 0 ? navigate(-1) : navigate(sitePath('/marketplace')))
 
   return (
     <article className="mx-auto max-w-3xl px-6 pb-16 pt-8">
@@ -252,50 +273,118 @@ function Detail({ product }) {
         Kembali ke Marketplace
       </button>
 
-      <DummyImage seed={product.seed} ratio="4 / 3" label="Gambar dummy" className="rounded-lg" />
+      {product.image_url
+        ? <div className="aspect-[4/3] overflow-hidden rounded-lg bg-gray-100"><img src={product.image_url} alt={product.name} decoding="async" className="h-full w-full object-cover" /></div>
+        : <DummyImage seed={product.seed} ratio="4 / 3" label="Gambar dummy" className="rounded-lg" />}
 
       <p className="mt-6 text-xs text-gray-500">{cat}</p>
       <h1 className="mt-1 text-2xl font-bold leading-snug text-gray-900 sm:text-3xl">{product.name}</h1>
       <p className="mt-2 flex items-center gap-2 text-sm text-gray-600">
-        <Stars value={Number(product.rating)} />
-        <span>{product.rating}</span>
+        <Stars value={Number(product.rating) || 0} />
+        <span>{product.rating ?? '–'}</span>
         <span aria-hidden="true">|</span>
         <span>Terjual {product.sold}</span>
       </p>
 
-      <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-3xl font-bold text-brand">{rupiah(product.price)}</p>
+      <p className="mt-5 text-3xl font-bold text-brand">{rupiah(product.price)}</p>
+
+      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <span className="text-sm font-medium text-gray-800">Jumlah</span>
+        <QtyStepper value={qty} onChange={setQty} />
+        {qty > 1 && <span className="text-sm text-gray-600">Total: <strong className="text-gray-900">{rupiah(product.price * qty)}</strong></span>}
+      </div>
+
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <button type="button" onClick={onAdd} className={ctaOutline}>
+          <ShoppingCartIcon className="h-5 w-5" aria-hidden="true" />
+          Add to Cart
+        </button>
         {wa ? (
           <a href={wa} target="_blank" rel="noopener noreferrer" className={cta}>Pesan via WhatsApp</a>
         ) : (
-          <Link to="/kontak" className={cta}>Pesan via WhatsApp</Link>
+          <Link to={sitePath("/kontak")} className={cta}>Pesan via WhatsApp</Link>
         )}
       </div>
+      <p role="status" aria-live="polite" className="mt-3 min-h-5 text-sm text-green-700">
+        {added && (<>Ditambahkan ke keranjang. <button type="button" onClick={openCart} className="font-semibold underline">Lihat keranjang</button></>)}
+      </p>
 
       <h2 className="mb-3 mt-10 text-xl font-bold text-gray-900">Deskripsi produk</h2>
-      <Description text={product.description} />
+      <Description text={product.description || 'Belum ada deskripsi untuk produk ini.'} />
 
-      <Reviews product={product} />
+      <Reviews reviews={reviews} onSubmit={onSubmitReview} />
     </article>
   )
 }
 
-export default function ProductDetail() {
+function NotFoundProduct() {
+  return (
+    <section className="mx-auto max-w-xl px-6 py-24 text-center">
+      <h1 className="text-2xl font-bold text-gray-900">Produk tidak ditemukan</h1>
+      <p className="mt-3 text-sm text-gray-600">Produk ini mungkin sudah dihapus atau alamatnya salah.</p>
+      <Link to={sitePath("/marketplace")} className="mt-6 inline-block rounded-full bg-brand px-8 py-3 text-sm font-semibold text-white hover:bg-brand-dark">
+        Lihat semua produk
+      </Link>
+    </section>
+  )
+}
+
+function DzikroundDetail() {
   const { id } = useParams()
   const product = getProduct(id)
+  if (!product) return <NotFoundProduct />
+  return <DzikroundLoaded key={product.id} product={product} />
+}
 
-  if (!product) {
-    return (
-      <section className="mx-auto max-w-xl px-6 py-24 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Produk tidak ditemukan</h1>
-        <p className="mt-3 text-sm text-gray-600">Produk ini mungkin sudah dihapus atau alamatnya salah.</p>
-        <Link to="/marketplace" className="mt-6 inline-block rounded-full bg-brand px-8 py-3 text-sm font-semibold text-white hover:bg-brand-dark">
-          Lihat semua produk
-        </Link>
-      </section>
-    )
+function DzikroundLoaded({ product }) {
+  const [mine, setMine] = useState(() => loadMine(product.id))
+  const submit = async ({ name, rating, comment }) => {
+    const review = { id: `me-${Date.now()}`, name, rating, comment, date: new Date().toISOString() }
+    const list = [review, ...mine]
+    setMine(list)
+    saveMine(product.id, list)
   }
+  return <Detail product={product} categories={dzikCategories} reviews={[...mine, ...product.reviews]} onSubmitReview={submit} />
+}
 
-  // key memastikan state ulasan dan deskripsi reset saat pindah produk
-  return <Detail key={product.id} product={product} />
+// Produk Nusatron: data dan ulasan dari backend.
+function NusatronDetail() {
+  const { id } = useParams()
+  const [state, setState] = useState({ status: 'loading', product: null })
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setState({ status: 'loading', product: null })
+    getPublicMarketplaceProduct(id, controller.signal)
+      .then((product) => setState({ status: 'ready', product }))
+      .catch((err) => { if (err?.name !== 'AbortError') setState({ status: err?.status === 404 ? 'missing' : 'error', product: null, message: err?.message }) })
+    return () => controller.abort()
+  }, [id])
+
+  if (state.status === 'loading') {
+    return <div className="mx-auto max-w-3xl px-6 pb-16 pt-8"><div className="aspect-[4/3] animate-pulse rounded-lg bg-gray-100" /></div>
+  }
+  if (state.status === 'missing') return <NotFoundProduct />
+  if (state.status === 'error') {
+    return <section className="mx-auto max-w-xl px-6 py-24 text-center text-sm text-red-700">{state.message || 'Gagal memuat produk.'}</section>
+  }
+  return <NusatronLoaded key={state.product.id} initial={state.product} />
+}
+
+function NusatronLoaded({ initial }) {
+  const [reviews, setReviews] = useState(initial.reviews || [])
+  const submit = async (payload) => {
+    const saved = await postMarketplaceReview(initial.id, payload)
+    setReviews((prev) => [saved, ...prev])
+  }
+  const count = reviews.length
+  const rating = count ? (reviews.reduce((a, r) => a + r.rating, 0) / count).toFixed(1) : null
+  const category = (initial.category || '').trim()
+  const product = { ...initial, rating, categoryId: category, seed: 0 }
+  const cats = category ? [{ id: category, name: category }] : []
+  return <Detail product={product} categories={cats} reviews={reviews} onSubmitReview={submit} />
+}
+
+export default function ProductDetail() {
+  return getSiteKey() === 'nusatron' ? <NusatronDetail /> : <DzikroundDetail />
 }

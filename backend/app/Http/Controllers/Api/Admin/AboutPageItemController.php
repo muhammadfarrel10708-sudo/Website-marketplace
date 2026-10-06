@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AboutPageItemRequest;
 use App\Http\Resources\AboutPageItemResource;
+use App\Support\SiteContext;
 use App\Models\AboutPageItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -25,7 +26,7 @@ class AboutPageItemController extends Controller
     public function store(AboutPageItemRequest $request): JsonResponse
     {
         $data = $request->safe()->except(['image']);
-        if ($request->hasFile('image')) $data['image_path'] = $request->file('image')->store('about-page', self::DISK);
+        if ($request->hasFile('image')) $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('about-page'), self::DISK);
         $data['is_active'] = $request->boolean('is_active', true);
         $data['sort_order'] = $data['sort_order'] ?? ((int) AboutPageItem::where('section_key', $data['section_key'])->max('sort_order') + 1);
         $item = AboutPageItem::create($data);
@@ -41,7 +42,7 @@ class AboutPageItemController extends Controller
         $oldImage = null;
         if ($request->hasFile('image')) {
             $oldImage = $aboutPageItem->image_path;
-            $data['image_path'] = $request->file('image')->store('about-page', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('about-page'), self::DISK);
         }
 
         $aboutPageItem->update($data);

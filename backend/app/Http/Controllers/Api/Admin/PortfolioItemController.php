@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PortfolioItemRequest;
 use App\Http\Resources\PortfolioItemResource;
+use App\Support\SiteContext;
 use App\Models\PortfolioItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,7 +21,7 @@ class PortfolioItemController extends Controller
     public function store(PortfolioItemRequest $request): JsonResponse
     {
         $data = $request->safe()->except(['image']);
-        if ($request->hasFile('image')) $data['image_path'] = $request->file('image')->store('portfolio', self::DISK);
+        if ($request->hasFile('image')) $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('portfolio'), self::DISK);
         $data['is_active'] = $request->boolean('is_active', true);
         $data['sort_order'] = $data['sort_order'] ?? ((int) PortfolioItem::max('sort_order') + 1);
         return (new PortfolioItemResource(PortfolioItem::create($data)))->response()->setStatusCode(201);
@@ -34,7 +35,7 @@ class PortfolioItemController extends Controller
         $oldImage = null;
         if ($request->hasFile('image')) {
             $oldImage = $portfolioItem->image_path;
-            $data['image_path'] = $request->file('image')->store('portfolio', self::DISK);
+            $data['image_path'] = $request->file('image')->store(SiteContext::uploadPath('portfolio'), self::DISK);
         }
         $portfolioItem->update($data);
         if ($oldImage) Storage::disk(self::DISK)->delete($oldImage);

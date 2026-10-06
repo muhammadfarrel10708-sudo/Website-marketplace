@@ -24,6 +24,9 @@ import ArticlesAdmin from './pages/admin/Articles'
 import ServicesAdmin from './pages/admin/Services'
 import AboutPageEditor from './pages/admin/AboutPageEditor'
 import PortfolioEditor from './pages/admin/PortfolioEditor'
+import MarketplaceAdmin from './pages/admin/Marketplace'
+import ContactEditor from './pages/admin/ContactEditor'
+import SettingsAdmin from './pages/admin/Settings'
 
 function AboutPageEditorRoute() {
   const [searchParams] = useSearchParams()
@@ -37,7 +40,7 @@ export default function App() {
     <AuthProvider>
       <ScrollToTop />
       <Routes>
-        {/* Website publik */}
+        {/* Website publik Dzikround */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/tentang-kami" element={<About />} />
@@ -55,6 +58,24 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Route>
 
+        {/* Website publik Nusatron: konten sama, data dan tema terpisah. */}
+        <Route path="/nusatron" element={<PublicLayout />}>
+          <Route index element={<Home />} />
+          <Route path="tentang-kami" element={<About />} />
+          <Route path="layanan" element={<Services />} />
+          <Route path="kalkulator-videotron" element={<Calculator />} />
+          <Route path="marketplace" element={<Marketplace />} />
+          <Route path="marketplace/:id" element={<ProductDetail />} />
+          <Route path="portofolio" element={<Portfolio />} />
+          <Route path="artikel" element={<Articles />} />
+          <Route path="artikel/:slug" element={<ArticleDetail placement="menu" />} />
+          <Route path="artikel/home/:slug" element={<ArticleDetail placement="home" />} />
+          <Route path="faq" element={<Faq />} />
+          <Route path="kontak" element={<Contact />} />
+          <Route path="pesan-sekarang" element={<Order />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+
         {/* Login: hanya bisa dibuka lewat URL, tidak ada tautannya di menu */}
         <Route path="/login" element={<Login />} />
 
@@ -63,10 +84,13 @@ export default function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="landing-page" element={<HeroSection />} />
+            <Route path="marketplace" element={<MarketplaceAdmin />} />
             <Route path="about-page" element={<AboutPageEditorRoute />} />
             <Route path="articles" element={<ArticlesAdmin placement="menu" />} />
             <Route path="services" element={<ServicesAdmin placement="page" />} />
             <Route path="portfolio" element={<PortfolioEditor />} />
+            <Route path="contact-page" element={<ContactEditor />} />
+            <Route path="settings" element={<SettingsAdmin />} />
             <Route path="heroes" element={<Navigate to="/admin/landing-page" replace />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Route>

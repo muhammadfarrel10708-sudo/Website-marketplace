@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSite;
+
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class AboutContent extends Model
 {
+    use BelongsToSite;
+
     protected $fillable = [
         'title',
         'paragraph_one',

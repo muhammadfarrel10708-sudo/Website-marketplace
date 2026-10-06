@@ -65,12 +65,17 @@ function CardTwo({ product, seed }) {
   )
 }
 
-export default function ProductsSection() {
-  const [products, setProducts] = useState(fallback)
-  const [title, setTitle] = useState('Produk Kami')
-  const [subtitle, setSubtitle] = useState('')
+export default function ProductsSection({ initialProducts = null, initialSection = null }) {
+  const [products, setProducts] = useState(initialProducts?.length ? initialProducts : fallback)
+  const [title, setTitle] = useState(initialSection?.title || 'Produk Kami')
+  const [subtitle, setSubtitle] = useState(initialSection?.subtitle || '')
 
   useEffect(() => {
+    if (Array.isArray(initialProducts) || initialSection) {
+      if (initialProducts?.length) setProducts(initialProducts)
+      if (initialSection) { setTitle(initialSection.title || 'Produk Kami'); setSubtitle(initialSection.subtitle || '') }
+      return undefined
+    }
     const controller = new AbortController()
     Promise.allSettled([getPublicProducts(controller.signal), getSection('produk', controller.signal)]).then(([productsResult, sectionResult]) => {
       if (productsResult.status === 'fulfilled' && productsResult.value?.length) setProducts(productsResult.value)
@@ -80,7 +85,7 @@ export default function ProductsSection() {
       }
     })
     return () => controller.abort()
-  }, [])
+  }, [initialProducts, initialSection])
 
   return (
     <section className="bg-gray-50 py-16">

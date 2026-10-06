@@ -266,7 +266,7 @@ export default function HeroAdmin() {
               </div>
 
               <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-4">
-                <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="h-4 w-4 accent-[#2f42d6]" />
+                <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="h-4 w-4 accent-[var(--color-brand)]" />
                 <span><span className="block text-sm font-semibold text-gray-800">Tampilkan di website</span><span className="block text-xs text-gray-500">Hero aktif akan masuk ke slider landing page.</span></span>
               </label>
             </div>

@@ -12,7 +12,7 @@ export default function HomeServiceAreas() {
       </div>
 
       <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 className="text-lg font-bold text-gray-900">Area Layanan Nama Brand</h2>
+        <h2 className="text-lg font-bold text-gray-900">Area Layanan Dzikround / Nusatron</h2>
         <p className="mt-1 text-sm text-gray-500">
           Data berikut mengikuti konten Area Layanan pada Home.
         </p>

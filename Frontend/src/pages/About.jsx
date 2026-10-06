@@ -17,7 +17,7 @@ function MapDummy() {
   return (
     <svg viewBox="0 0 680 260" className="w-full" role="img" aria-label="Ilustrasi sebaran pelanggan di Indonesia">
       {islands.map((o, i) => <ellipse key={i} cx={o.cx} cy={o.cy} rx={o.rx} ry={o.ry} transform={`rotate(${o.r} ${o.cx} ${o.cy})`} fill="#c9c9c9" />)}
-      {dots.map(([x, y], i) => <g key={i}><circle cx={x} cy={y} r="13" fill="#444" fillOpacity=".55" /><circle cx={x} cy={y} r="4" fill="#2f42d6" /></g>)}
+      {dots.map(([x, y], i) => <g key={i}><circle cx={x} cy={y} r="13" fill="#444" fillOpacity=".55" /><circle cx={x} cy={y} r="4" fill="var(--color-brand)" /></g>)}
     </svg>
   )
 }

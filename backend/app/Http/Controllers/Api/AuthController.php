@@ -57,6 +57,8 @@ class AuthController extends Controller
             'username' => $user->username,
             // Semua akun di tabel users dipakai sebagai admin dashboard
             'role' => 'admin',
+            'site_key' => in_array($user->site_key, ['dzikround', 'nusatron'], true) ? $user->site_key : ($user->username === 'nusatron' ? 'nusatron' : 'dzikround'),
+            'brand' => ($user->site_key ?? ($user->username === 'nusatron' ? 'nusatron' : 'dzikround')) === 'nusatron' ? 'Nusatron' : 'Dzikround',
         ];
     }
 }
